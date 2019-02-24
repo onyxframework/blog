@@ -103,6 +103,9 @@ dependencies:
   onyx-rest:
     github: onyxframework/rest
     version: ~> 0.6.3
+  onyx-sql:
+    github: onyxframework/sql
+    version: ~> 0.6.2
   pg:
     github: will/crystal-pg
     version: ~> 0.15.0
