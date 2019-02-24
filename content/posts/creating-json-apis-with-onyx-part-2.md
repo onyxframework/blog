@@ -18,7 +18,7 @@ In the second part of the tutorial we're going to create CRUD actions for our To
 
 ---
 
-We will be using [`Onyx::SQL`](https://onyxframework.org/sql) as an ORM and [PostgreSQL](https://www.postgresql.org/) as a database (although it's possible to use another SQL database with slight changes to the code).
+We will be using [Onyx::SQL](https://onyxframework.org/sql) as an ORM and [PostgreSQL](https://www.postgresql.org/) as a database (although it's possible to use another SQL database with slight changes to the code).
 
 **Table of contents:**
 
