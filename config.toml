@@ -1,0 +1,25 @@
+baseURL = "https://blog.onyxframework.org/"
+languageCode = "en-us"
+title = "Onyx Framework Blog"
+theme = "hugo-paper"
+pygmentsCodeFences = true
+pygmentsUseClasses = true
+enableEmoji = true
+enableRobotsTXT = true
+canonifyURLs = true
+
+[menu]
+
+  [[menu.main]]
+    name = "Visit onyxframework.org"
+    url = "https://onyxframework.org"
+    weight = -110
+
+  [[menu.main]]
+    name = "See this blog on github.com"
+    url = "https://github.com/onyxframework/blog"
+    weight = -100
+
+[params]
+  author = "Onyx Framework"
+  description = "Onyx Framework is a Crystal language general-purpose framework"
