@@ -80,4 +80,4 @@ It's true that you can't just install-n-go on Windows yet, but it will be possib
 
 ## Conclusion
 
-Even if you still not sure whether to use the language or not, it worth at least trying. Follow the [Building JSON APIs with Onyx](/building-json-apis-with-onyx) tutorial to find out how simple and enjoyable it is to create bullet-proof web applications with modern compiled languages!
+Even if you still not sure whether to use the language or not, it worth at least trying. Follow the [Building JSON APIs with Onyx](/posts/creating-json-apis-with-onyx-part-1) tutorial to find out how simple and enjoyable it is to create bullet-proof web applications with modern compiled languages!
