@@ -211,7 +211,7 @@ struct Actions::Items::Create
   params do
     # Will attempt to parse JSON params even if
     # "Content-Type" header is not "application/json"
-    json required: true do
+    json require: true do
       type content : String
     end
   end
@@ -517,7 +517,7 @@ struct Actions::Items::Update
       type id : Int32
     end
 
-    json required: true do
+    json require: true do
       type completed : Bool?
       type content : String?
     end
