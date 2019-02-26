@@ -209,31 +209,18 @@ struct Actions::Items::Create
   include Onyx::REST::Action
 
   params do
-    json do
+    # Will attempt to parse JSON params even if
+    # "Content-Type" header is not "application/json"
+    json required: true do
       type content : String
     end
   end
 
-  # Define REST errors
-  #
-
-  errors do
-    # Return 400 if a request doesn't have a
-    # "Content-Type" header equal to "application/json"
-    type JSONContentTypeRequired(400)
-  end
-
   def call
-    # Validate the request payload
-    #
-
-    json = params.json
-    raise JSONContentTypeRequired.new unless json
-
     # Insert the model into the database
     #
 
-    item = Models::Item.new(content: json.content)
+    item = Models::Item.new(content: params.json.content)
     Onyx.exec(item.insert)
 
     # Return the success status
@@ -272,7 +259,7 @@ From now on, the application **requires** `DATABASE_URL` environment variable to
 And make a POST request to the new endpoint:
 
 ```sh
-> curl -X POST -d '{"content": "Learn Crystal"}' -H 'Content-Type: application/json' -v http://localhost:5000/items
+> curl -X POST -d '{"content": "Learn Crystal"}' -v http://localhost:5000/items
 ```
 
 You should see the valid status in the response:
@@ -321,7 +308,7 @@ Then modify the Create action so it returns the view. Previously we were using `
     # Insert the model into the database
     #
 
-    item = Models::Item.new(content: json.content)
+    item = Models::Item.new(content: params.json.content)
     item = Onyx.query(item.insert.returning("*")).first
 
     # Return the success status
@@ -336,7 +323,7 @@ end
 The endpoint should now return the freshly created item:
 
 ```sh
-> curl -X POST -d '{"content": "Learn Onyx"}' -H 'Content-Type: application/json' -v http://localhost:5000/items
+> curl -X POST -d '{"content": "Learn Onyx"}' -v http://localhost:5000/items
 ...
 < HTTP/1.1 201 Created
 < Content-Type: application/json; charset=utf-8
@@ -530,7 +517,7 @@ struct Actions::Items::Update
       type id : Int32
     end
 
-    json do
+    json required: true do
       type completed : Bool?
       type content : String?
     end
@@ -540,10 +527,6 @@ struct Actions::Items::Update
   #
 
   errors do
-    # Return 400 if a request doesn't have a
-    # "Content-Type" header equal to "application/json"
-    type JSONContentTypeRequired(400)
-
     # Return 400 if there is nothing to update
     type NothingToUpdate(400)
 
@@ -555,9 +538,7 @@ struct Actions::Items::Update
     # Validate the request
     #
 
-    json = params.json
-    raise JSONContentTypeRequired.new unless json
-    raise NothingToUpdate.new unless json.content || !json.completed.nil?
+    raise NothingToUpdate.new unless params.json.content || !params.json.completed.nil?
 
     # Fetch the item from DB
     #
@@ -570,12 +551,12 @@ struct Actions::Items::Update
 
     changeset = item.changeset
 
-    if content = json.content
+    if content = params.json.content
       changeset.content = content
     end
 
-    unless json.completed.nil?
-      changeset.completed = json.completed
+    unless params.json.completed.nil?
+      changeset.completed = params.json.completed
     end
 
     # Halt if there are no actual changes
@@ -595,13 +576,13 @@ Onyx.get "/", Actions::Hello
 Onyx.post "/items", Actions::Items::Create
 Onyx.get "/items", Actions::Items::Index
 Onyx.get "/items/:id", Actions::Items::Get
-Onyx.put "/items/:id", Actions::Items::Update # << Added
+Onyx.patch "/items/:id", Actions::Items::Update # << Added
 ```
 
 Looks like you're doing great with Onyx! Let's update the corresponding item:
 
 ```sh
-> curl -X PUT -d '{"completed": true}' -H 'Content-Type: application/json' http://localhost:5000/items/2
+> curl -X PATCH -d '{"completed": true}' http://localhost:5000/items/2
 {"item":{"id":2,"completed":true,"content":"Learn Onyx","createdAt":"2019-02-22T22:11:39Z","updatedAt":null}}
 ```
 
@@ -650,7 +631,7 @@ Onyx.get "/", Actions::Hello
 Onyx.post "/items", Actions::Items::Create
 Onyx.get "/items", Actions::Items::Index
 Onyx.get "/items/:id", Actions::Items::Get
-Onyx.put "/items/:id", Actions::Items::Update
+Onyx.patch "/items/:id", Actions::Items::Update
 Onyx.delete "/items/:id", Actions::Items::Delete # << Finally, this line
 ```
 
