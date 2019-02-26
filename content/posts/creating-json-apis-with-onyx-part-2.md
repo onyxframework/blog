@@ -7,7 +7,7 @@ tags: [Crystal, Onyx Framework]
 keywords: [Crystal, Onyx Framework, Tutorial]
 ---
 
-In the second part of the tutorial we're going to create CRUD actions for our Todo list JSON API. You should have the code from [the first part](/posts/creating-json-apis-with-onyx-part-1/) available.
+In the second part of the tutorial we are going to create CRUD actions for our Todo list JSON API. You should have the code from [the first part](/posts/creating-json-apis-with-onyx-part-1/) available.
 
 <!--more-->
 

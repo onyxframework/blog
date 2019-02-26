@@ -6,7 +6,7 @@ author: Vlad Faust
 tags: [Crystal, Onyx Framework]
 ---
 
-In this series of tutorials, we'll show you how to build a simple JSON API for a Todo items list with [Crystal programming language](https://crystal-lang.org/) and [Onyx Framework](https://onyxframework.org/).
+In this series of tutorials, we will show you how to build a simple JSON API for a Todo items list with [Crystal programming language](https://crystal-lang.org/) and [Onyx Framework](https://onyxframework.org/).
 
 <!--more-->
 
