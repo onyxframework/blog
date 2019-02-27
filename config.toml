@@ -7,6 +7,7 @@ pygmentsUseClasses = true
 enableEmoji = true
 enableRobotsTXT = true
 canonifyURLs = true
+googleAnalytics = "UA-135279567-2"
 
 [menu]
 
@@ -21,5 +22,5 @@ canonifyURLs = true
     weight = -100
 
 [params]
-  author = "Onyx Framework"
-  description = "Onyx Framework is a Crystal language general-purpose framework"
+  description = "Read Onyx Framework development and community news, learn about its powers and how-to's."
+  images = ["/images/twitter_card.png"]
