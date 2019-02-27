@@ -9,7 +9,13 @@ In this article you will find out how to easily create a distributed websocket c
 
 <!--more-->
 
-Crystal has already proven its superiority regarding to websockets performance in Serdar Doğruyol's [blog post](http://serdardogruyol.com/benchmarking-and-scaling-websockets-handling-60000-concurrent-connections-with-kemal) -- it is able to handle up to 60000 concurrent connections on a 2 GB DigitalOcean droplet.
+[Crystal](https://crystal-lang.org) is a rapidly growing compiled language with speed of C and Ruby-inspired syntax.
+
+It has already proven its superiority regarding to websockets performance in Serdar Doğruyol's [blog post](http://serdardogruyol.com/benchmarking-and-scaling-websockets-handling-60000-concurrent-connections-with-kemal) -- it is able to handle up to 60000 concurrent connections on a 2 GB DigitalOcean droplet:
+
+<div class="twitter-widget-wrapper">
+{{< tweet 797835943864573952 >}}
+</div>
 
 It works great in a single process, but what if you want to scale your application? It is very simple with [Onyx::REST](https://github.com/onyxframework/rest) [`Channel`](https://api.onyxframework.org/rest/Onyx/REST/Channel.html) and [Onyx::EDA](https://github.com/onyxframework/eda). This is a complete code of the application:
 
@@ -56,7 +62,7 @@ class Chat
 end
 
 Onyx.ws "/", Chat
-Onyx.listen
+Onyx.listen(port: ENV["POST"].to_i) # You'll also need PORT variable
 ```
 
 First terminal:
@@ -78,7 +84,7 @@ Third terminal:
 ```sh
 > wscat --connect ws://localhost:5000?name=Alice
 connected (press CTRL+C to quit)
-> Hello!
+> Hello! # Message sent in this terminal
 < Alice: Hello!
 < Bob: Hi!
 >
@@ -90,18 +96,16 @@ Fourth terminal:
 > wscat --connect ws://localhost:5001?name=Bob
 connected (press CTRL+C to quit)
 < Alice: Hello!
-> Hi!
+> Hi! # Message sent in this terminal
 < Bob: Hi!
 >
 ```
 
-These are two separate websocket chat processes which use Redis as a back-end for synchronisation, just in 40 lines!
+These are two separate websocket chat processes which use Redis as a back-end for synchronisation, in just in **40 lines of code**!
 
-Note that you'll need Redis >= 5 to make Onyx::EDA work with it.
+Note that you'll need Redis **>= 5** to make Onyx::EDA work with it. I also use [wscat](https://www.npmjs.com/package/wscat) to test the websockets in the terminal in this article.
 
-I use [wscat](https://www.npmjs.com/package/wscat) to test the websockets.
-
-Crystal dependencies you'd need:
+Crystal dependencies ([*shards*](https://github.com/crystal-lang/shards)) you'd need:
 
 ```yaml
 # shard.yml
@@ -119,4 +123,4 @@ dependencies:
     version: ~> 0.2.0
 ```
 
-That's all for today!
+If you like this article but have no experience in Crystal, then follow out [series of tutorials](/posts/creating-json-apis-with-onyx-part-1/) which would lead you through the basics.
