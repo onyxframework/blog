@@ -179,10 +179,12 @@ code {
 }
 
 .menu-toggle::before {
+  transition: all 0.2s ease-out;
   transform: translate3d(-50%, -5px, 0);
 }
 
 .menu-toggle::after {
+  transition: all 0.2s ease-out;
   transform: translate3d(-50%, 5px, 0);
 }
 
@@ -196,6 +198,7 @@ code {
 
 .menu {
   display: none;
+  transition: all 0.2s ease-out;
 }
 
 .noscroll .menu {
