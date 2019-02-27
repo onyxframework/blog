@@ -62,7 +62,7 @@ class Chat
 end
 
 Onyx.ws "/", Chat
-Onyx.listen(port: ENV["POST"].to_i) # You'll also need PORT variable
+Onyx.listen(port: ENV["PORT"].to_i) # You'll also need PORT variable
 ```
 
 First terminal:
