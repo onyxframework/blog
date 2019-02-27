@@ -17,7 +17,11 @@ It has already proven its superiority regarding to websockets performance in Ser
 {{< tweet 797835943864573952 >}}
 </div>
 
-It works great in a single process, but what if you want to scale your application? It is very simple with [Onyx::REST](https://github.com/onyxframework/rest) [`Channel`](https://api.onyxframework.org/rest/Onyx/REST/Channel.html) and [Onyx::EDA](https://github.com/onyxframework/eda). This is a complete code of the application:
+It works great in a single process, but what if you wanted to scale your application? It is very simple to do so with [Onyx::REST](https://github.com/onyxframework/rest) [`Channel`](https://api.onyxframework.org/rest/Onyx/REST/Channel.html) and [Onyx::EDA](https://github.com/onyxframework/eda).
+
+Note that Onyx::EDA relies on Redis Streams feature, thus requiring Redis version **>=5**. I use [wscat](https://www.npmjs.com/package/wscat) to test the websockets in the terminal in this article.
+
+This is a complete code of the app:
 
 ```crystal
 # src/onyx-chat.cr
@@ -102,8 +106,6 @@ connected (press CTRL+C to quit)
 ```
 
 These are two separate websocket chat processes which use Redis as a back-end for synchronisation, in just in **40 lines of code**!
-
-Note that you'll need Redis **>= 5** to make Onyx::EDA work with it. I also use [wscat](https://www.npmjs.com/package/wscat) to test the websockets in the terminal in this article.
 
 Crystal dependencies ([*shards*](https://github.com/crystal-lang/shards)) you'd need:
 
