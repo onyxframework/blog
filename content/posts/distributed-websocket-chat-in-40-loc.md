@@ -62,14 +62,14 @@ Onyx.listen
 First terminal:
 
 ```sh
-> env PORT=5000 crystal src/onyx-chat.cr
+> env PORT=5000 REDIS_URL=redis://localhost:6379 crystal src/onyx-chat.cr
  INFO [21:25:38.483] ⬛ Onyx::HTTP::Server is listening at http://127.0.0.1:5000
 ```
 
 Second terminal (note another port):
 
 ```sh
-> env PORT=5001 crystal src/onyx-chat.cr
+> env PORT=5001 REDIS_URL=redis://localhost:6379 crystal src/onyx-chat.cr
  INFO [21:25:38.483] ⬛ Onyx::HTTP::Server is listening at http://127.0.0.1:5001
 ```
 
@@ -97,9 +97,11 @@ connected (press CTRL+C to quit)
 
 These are two separate websocket chat processes which use Redis as a back-end for synchronisation, just in 40 lines!
 
-I use [wscat](https://www.npmjs.com/package/wscat) for testing websockets.
+Note that you'll need Redis >= 5 to make Onyx::EDA work with it.
 
-Dependencies you'd need:
+I use [wscat](https://www.npmjs.com/package/wscat) to test the websockets.
+
+Crystal dependencies you'd need:
 
 ```yaml
 # shard.yml
@@ -117,4 +119,4 @@ dependencies:
     version: ~> 0.2.0
 ```
 
-That's all!
+That's all for today!
