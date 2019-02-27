@@ -23,4 +23,4 @@ googleAnalytics = "UA-135279567-2"
 
 [params]
   description = "Read Onyx Framework development and community news, learn about its powers and how-to's."
-  images = ["/images/twitter_card.png"]
+  images = ["/images/twitter-card.png"]
