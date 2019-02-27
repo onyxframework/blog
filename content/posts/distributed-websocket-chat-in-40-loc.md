@@ -19,7 +19,7 @@ It has already proven its superiority regarding to websockets performance in Ser
 
 It works great in a single process, but what if you wanted to scale your application? It is very simple to do so with [Onyx::REST](https://github.com/onyxframework/rest) [`Channel`](https://api.onyxframework.org/rest/Onyx/REST/Channel.html) and [Onyx::EDA](https://github.com/onyxframework/eda).
 
-Note that Onyx::EDA relies on Redis Streams feature, thus requiring Redis version **>=5**. I use [wscat](https://www.npmjs.com/package/wscat) to test the websockets in the terminal in this article.
+Note that Onyx::EDA relies on Redis [Streams](https://redis.io/topics/streams-intro) feature, that's why it requires Redis version **>=5**. I use [wscat](https://www.npmjs.com/package/wscat) to test the websockets in the terminal in this article.
 
 This is a complete code of the app:
 
