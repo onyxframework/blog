@@ -552,15 +552,18 @@ struct Actions::Items::Update
     changeset = item.changeset
 
     if content = params.json.content
-      changeset.content = content
+      changeset.update(content: content)
     end
 
     unless params.json.completed.nil?
-      changeset.completed = params.json.completed
+      changeset.update(completed: params.json.completed)
     end
 
     # Halt if there are no actual changes
     raise NothingToUpdate.new if changeset.empty?
+
+    # Update the updated_at field
+    changeset.update(updated_at: Time.now)
 
     # Update the item with modified changeset returning itself
     #
