@@ -1,13 +1,14 @@
 ---
 title: "Creating JSON APIs with Onyx. Part 2 — CRUD"
 date: 2019-02-24T19:22:25+03:00
+lastmod: 2019-03-11
 draft: false
 author: Vlad Faust
 tags: [Crystal, Onyx Framework]
 keywords: [Crystal, Onyx Framework, Tutorial]
 ---
 
-In the second part of the tutorial we are going to create CRUD actions for our Todo list JSON API. You should have the code from [the first part](/posts/creating-json-apis-with-onyx-part-1/) available.
+In the second part of the tutorial we are going to create CRUD endpoints for our Todo list JSON API. You should have the code from [the first part](/posts/creating-json-apis-with-onyx-part-1/) available. You can also clone it from [GitHub](https://github.com/vladfaust/onyx-todo-json-api/tree/part-1).
 
 <!--more-->
 
@@ -31,6 +32,7 @@ We will be using [Onyx::SQL](https://onyxframework.org/sql) as an ORM and [Postg
 7. [Adding the Get endpoint](#adding-the-get-endpoint)
 8. [Adding the Update endpoint](#adding-the-update-endpoint)
 9. [Adding the Delete endpoint](#adding-the-delete-endpoint)
+10. [Next steps](#next-steps)
 
 ### Creating a migration
 
@@ -81,15 +83,7 @@ Create a new `.env.development.local` file in the root of your project and fill 
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/todo-onyx
 ```
 
-And add the code which would load from this file in `src/server.cr`:
-
-{{< highlight crystal "hl_lines=1" >}}
-require "onyx/env"
-require "onyx/rest"
-
-require "./views/**"
-require "./actions/**"
-{{< / highlight >}}
+The code responsible for loading environment variables from `.env` files is included into all Onyx components by default.
 
 ### Running the migration
 
@@ -99,26 +93,26 @@ To run migrations from within the application, the [migrate.cr](https://github.c
 dependencies:
   onyx:
     github: onyxframework/onyx
-    version: ~> 0.1.2
-  onyx-rest:
-    github: onyxframework/rest
-    version: ~> 0.6.3
+    version: ~> 0.3.0
+  onyx-http:
+    github: onyxframework/http
+    version: ~> 0.7.0
   onyx-sql:
     github: onyxframework/sql
-    version: ~> 0.6.2
+    version: ~> 0.7.0
   pg:
     github: will/crystal-pg
     version: ~> 0.15.0
   migrate:
     github: vladfaust/migrate.cr
-    version: ~> 0.4.1
+    version: ~> 0.4.0
 {{< / highlight >}}
 
-Run `shards install` to actually install the freshly added dependencies.
+Run `shards install` to install the freshly added dependencies.
 
 To run tasks in Crystal, [Cake](https://github.com/axvm/cake) is used, which is just like Rake. Find installation instructions for Cake at <https://github.com/axvm/cake>. To continue, please make sure you've properly installed the binary with `cake -v` command.
 
-Now create a `Cakefile` at the root of the project. It's like Rakefile, but for Crystal:
+Now create a `Cakefile` at the root of the project. It is like Rakefile, but for Crystal:
 
 {{< highlight plaintext "hl_lines=2-4" >}}
 .
@@ -129,9 +123,8 @@ Now create a `Cakefile` at the root of the project. It's like Rakefile, but for 
 require "pg"
 require "migrate"
 
-require "onyx/env"
+require "onyx"
 require "onyx/db"
-require "onyx/logger"
 
 desc "Migrate database to the latest version"
 task :dbmigrate do
@@ -156,9 +149,9 @@ end
 
 Run the migration with `cake db:migrate`:
 
-```plaintext
+```sh
 > cake db:migrate
- INFO [20:29:28.661 #31308] Successfully migrated from version 0 to 1 in 72.377ms
+ INFO [20:29:28.661] Successfully migrated from version 0 to 1 in 72.377ms
 ```
 
 Now you have a table in the database, it's time to link it to the application code.
@@ -183,9 +176,9 @@ class Models::Item
 
   schema items do
     pkey id : Int32
-    type completed : Bool, default: true
-    type content : String
-    type created_at : Time, default: true
+    type completed : Bool, not_null: true, default: true
+    type content : String, not_null: true
+    type created_at : Time, not_null: true, default: true
     type updated_at : Time
   end
 end
@@ -195,18 +188,18 @@ That's all you need to define a model mapping!
 
 ### Adding the Create endpoint
 
-Add a new file at `src/actions/items/create.cr` and put the following code inside it.
+Add a new file at `src/endpoints/items/create.cr` and put the following code inside it.
 
 {{< highlight plaintext "hl_lines=3-4" >}}
 └── src
-    └── actions
+    └── endpoints
         └── items
             └── create.cr
 {{< / highlight >}}
 
 ```crystal
-struct Actions::Items::Create
-  include Onyx::REST::Action
+struct Endpoints::Items::Create
+  include Onyx::HTTP::Endpoint
 
   params do
     # Will attempt to parse JSON params even if
@@ -231,26 +224,22 @@ struct Actions::Items::Create
 end
 ```
 
-You should then make Onyx aknowledge of the new action:
+You should then make Onyx aknowledge of the new endpoint:
 
-> I cannot highlight the line in this block due to a [bug](https://github.com/alecthomas/chroma/issues/232) in Chroma code highlighting
-
-
-```crystal
-require "onyx/rest"
+{{< highlight crystal "hl_lines=3 8" >}}
+require "onyx/http"
 
 require "./models/**"
 require "./views/**"
-require "./actions/**"
+require "./endpoints/**"
 
-Onyx.get "/", Actions::Hello
-Onyx.post "/items", Actions::Items::Create # << New line
+Onyx.get "/", Endpoints::Hello
+Onyx.post "/items", Endpoints::Items::Create
 
-Onyx.render(:json)
 Onyx.listen
-```
+{{< / highlight >}}
 
-From now on, the application **requires** `DATABASE_URL` environment variable to be set in runtime (we defined it in the `.env.development.local` file). Run the server with the following command:
+From now on, the application **requires** `DATABASE_URL` environment variable to be set in runtime (you should have already defined it in the `.env.development.local` file). Run the server with the following command:
 
 ```sh
 > crystal src/server.cr
@@ -259,7 +248,7 @@ From now on, the application **requires** `DATABASE_URL` environment variable to
 And make a POST request to the new endpoint:
 
 ```sh
-> curl -X POST -d '{"content": "Learn Crystal"}' -v http://localhost:5000/items
+> curl -X POST -d '{"content": "Learn Crystal"}' -v http://127.0.0.1:5000/items
 ```
 
 You should see the valid status in the response:
@@ -278,31 +267,22 @@ Currently the response doesn't contain the created item itself. Let's add a corr
 
 ```crystal
 struct Views::Item
-  include Onyx::REST::View
+  include Onyx::HTTP::View
 
   def initialize(@item : Models::Item)
   end
 
-  json do
-    # At this moment we're in the root of the JSON document
-    #
-
-    object do                  # Add `{`
-      field "item" do          # Add `"item":`
-        object do              # Add another `{`
-          field "id", @item.id # Add `"id":1`, ditto below
-          field "completed", @item.completed
-          field "content", @item.content
-          field "createdAt", @item.created_at
-          field "updatedAt", @item.updated_at?
-        end # Close object with `}`
-      end
-    end # ditto
-  end
+  json(
+    id: @item.id,
+    completed: @item.completed,
+    content: @item.content,
+    createdAt: @item.created_at,
+    updatedAt: @item.updated_at
+  )
 end
 ```
 
-Then modify the Create action so it returns the view. Previously we were using `Onyx.exec` to execute an SQL query and not expect anything in return. Now we use `Onyx.query` to actually query the database with `INSERT ... RETURNING` query:
+Then modify the Create endpoint so it returns the view. Previously we were using `Onyx.exec` to execute an SQL query and not expect anything in return. Now we use `Onyx.query` to actually query the database with `INSERT ... RETURNING` query:
 
 {{< highlight crystal "hl_lines=5 11" >}}
     # Insert the model into the database
@@ -323,7 +303,7 @@ end
 The endpoint should now return the freshly created item:
 
 ```sh
-> curl -X POST -d '{"content": "Learn Onyx"}' -v http://localhost:5000/items
+> curl -X POST -d '{"content": "Learn Onyx"}' -v http://127.0.0.1:5000/items
 ...
 < HTTP/1.1 201 Created
 < Content-Type: application/json; charset=utf-8
@@ -334,18 +314,18 @@ The endpoint should now return the freshly created item:
 
 You may also notice the repository logs of your server process:
 
-```plaintext
-DEBUG [00:42:55.283 #15402] [postgresql] INSERT INTO items (content, updated_at) VALUES ($1, $2) RETURNING *
-DEBUG [00:42:55.286 #15402] 2.731ms
+```sh
+DEBUG [00:42:55.283] [postgresql] INSERT INTO items (content, updated_at) VALUES ($1, $2) RETURNING *
+DEBUG [00:42:55.286] 2.731ms
 ```
 
 ### Adding the Index endpoint
 
-Now we want to list all the items we have. To do so, create a new Index action at `src/actions/items/index.cr` and a new view at `src/views/items.cr`. The code below is pretty self-explainatory.
+Now we want to list all the items we have. To do so, create a new Index endpoint at `src/endpoints/items/index.cr` and a new view at `src/views/items.cr`. The code below is pretty self-explainatory.
 
 {{< highlight plaintext "hl_lines=5 8" >}}
 └── src
-    ├── actions
+    ├── endpoints
     │   └── items
     │       ├── create.cr
     │       └── index.cr
@@ -355,11 +335,11 @@ Now we want to list all the items we have. To do so, create a new Index action a
 {{< / highlight >}}
 
 ```crystal
-# src/actions/items/index.cr
+# src/endpoints/items/index.cr
 #
 
-struct Actions::Items::Index
-  include Onyx::REST::Action
+struct Endpoints::Items::Index
+  include Onyx::HTTP::Endpoint
 
   def call
     items = Onyx.query(Models::Item.all)
@@ -373,81 +353,37 @@ end
 #
 
 struct Views::Items
-  include Onyx::REST::View
+  include Onyx::HTTP::View
 
   def initialize(@items : Enumerable(Models::Item))
   end
 
-  json do
-    object do
-      field "items" do
-        array do
-          @items.each do |item|
-            # Note the new `true` argument
-            # `itself` refers to the current JSON object
-            Views::Item.new(item, true).to_json(itself)
-          end
-        end
-      end
-    end
-  end
+  json items: @items.map { |i| Views::Item.new(i) }
 end
 ```
 
-Also modify the `Views::Item` view, so we it becomes "embeddable":
+Finally add the new endpoint to `src/server.cr`:
 
-{{< highlight crystal "hl_lines=4 9-14 22-24" >}}
-struct Views::Item
-  include Onyx::REST::View
-
-  def initialize(@item : Models::Item, @nested = false) # Add `nested` arg
-  end
-
-  json do
-    object do # Add `{`
-      unless @nested
-        # If we're **not** within a nested JSON, then
-        # begin a new object with `"item":{`
-        string "item"
-        start_object
-      end
-
-      field "id", @item.id # Add `"id":1`, ditto below
-      field "completed", @item.completed
-      field "content", @item.content
-      field "createdAt", @item.created_at
-      field "updatedAt", @item.updated_at?
-
-      unless @nested
-        end_object
-      end
-    end # ditto
-  end
-end
+{{< highlight crystal "hl_lines=3" >}}
+Onyx.get "/", Endpoints::Hello
+Onyx.post "/items", Endpoints::Items::Create
+Onyx.get "/items", Endpoints::Items::Index
 {{< / highlight >}}
-
-Finally add the new action to `src/server.cr`:
-
-```crystal
-Onyx.get "/", Actions::Hello
-Onyx.post "/items", Actions::Items::Create
-Onyx.get "/items", Actions::Items::Index # << This
-```
 
 Run the server and validate the endpoint with curl:
 
 ```sh
-> curl http://localhost:5000/items
+> curl http://127.0.0.1:5000/items
 {"items":[{"id":1,"completed":false,"content":"Learn Crystal","createdAt":"2019-02-22T22:11:33Z","updatedAt":null},{"id":2,"completed":false,"content":"Learn Onyx","createdAt":"2019-02-22T22:11:39Z","updatedAt":null}]}
 ```
 
 ### Adding the Get endpoint
 
-Get Action is very simple, you don't need a new View for it:
+Get Endpoint is very simple, you don't need a new View for it:
 
 {{< highlight plaintext "hl_lines=5" >}}
 └── src
-    └── actions
+    └── endpoints
         └── items
             ├── create.cr
             ├── get.cr
@@ -455,8 +391,8 @@ Get Action is very simple, you don't need a new View for it:
 {{< / highlight >}}
 
 ```crystal
-struct Actions::Items::Get
-  include Onyx::REST::Action
+struct Endpoints::Items::Get
+  include Onyx::HTTP::Endpoint
 
   params do
     path do
@@ -478,29 +414,29 @@ struct Actions::Items::Get
 end
 ```
 
-```crystal
-Onyx.get "/", Actions::Hello
-Onyx.post "/items", Actions::Items::Create
-Onyx.get "/items", Actions::Items::Index
-Onyx.get "/items/:id", Actions::Items::Get # << New line
-```
+{{< highlight crystal "hl_lines=4" >}}
+Onyx.get "/", Endpoints::Hello
+Onyx.post "/items", Endpoints::Items::Create
+Onyx.get "/items", Endpoints::Items::Index
+Onyx.get "/items/:id", Endpoints::Items::Get
+{{< / highlight >}}
 
 Don't forget to test it with curl:
 
 ```sh
-> curl http://localhost:5000/items/1
+> curl http://127.0.0.1:5000/items/1
 {"item":{"id":1,"completed":false,"content":"Learn Crystal","createdAt":"2019-02-22T22:11:33Z","updatedAt":null}}
-> curl http://localhost:5000/items/0
+> curl http://127.0.0.1:5000/items/0
 {"error":{"class":"ItemNotFound","message":"Item Not Found","code":404}}
 ```
 
 ### Adding the Update endpoint
 
-To be able to update created items, you'll need a brand new Update action:
+To be able to update created items, you'll need a brand new Update endpoint:
 
 {{< highlight plaintext "hl_lines=7" >}}
 └── src
-    └── actions
+    └── endpoints
         └── items
             ├── create.cr
             ├── get.cr
@@ -509,8 +445,8 @@ To be able to update created items, you'll need a brand new Update action:
 {{< / highlight >}}
 
 ```crystal
-struct Actions::Items::Update
-  include Onyx::REST::Action
+struct Endpoints::Items::Update
+  include Onyx::HTTP::Endpoint
 
   params do
     path do
@@ -523,7 +459,7 @@ struct Actions::Items::Update
     end
   end
 
-  # Define REST errors
+  # Define HTTP errors
   #
 
   errors do
@@ -538,7 +474,7 @@ struct Actions::Items::Update
     # Validate the request
     #
 
-    raise NothingToUpdate.new unless params.json.content || !params.json.completed.nil?
+    raise NothingToUpdate.new if params.json.content.nil? && params.json.completed.nil?
 
     # Fetch the item from DB
     #
@@ -574,28 +510,28 @@ struct Actions::Items::Update
 end
 ```
 
-```crystal
-Onyx.get "/", Actions::Hello
-Onyx.post "/items", Actions::Items::Create
-Onyx.get "/items", Actions::Items::Index
-Onyx.get "/items/:id", Actions::Items::Get
-Onyx.patch "/items/:id", Actions::Items::Update # << Added
-```
+{{< highlight crystal "hl_lines=5" >}}
+Onyx.get "/", Endpoints::Hello
+Onyx.post "/items", Endpoints::Items::Create
+Onyx.get "/items", Endpoints::Items::Index
+Onyx.get "/items/:id", Endpoints::Items::Get
+Onyx.patch "/items/:id", Endpoints::Items::Update
+{{< / highlight >}}
 
 Looks like you're doing great with Onyx! Let's update the corresponding item:
 
 ```sh
-> curl -X PATCH -d '{"completed": true}' http://localhost:5000/items/2
+> curl -X PATCH -d '{"completed": true}' http://127.0.0.1:5000/items/2
 {"item":{"id":2,"completed":true,"content":"Learn Onyx","createdAt":"2019-02-22T22:11:39Z","updatedAt":null}}
 ```
 
 ### Adding the Delete endpoint
 
-As you've completed the item, you may want to delete it. For this, create a new Delete action at `src/actions/items/delete.cr`:
+As you've completed the item, you may want to delete it. For this, create a new Delete endpoint at `src/endpoints/items/delete.cr`:
 
 {{< highlight plaintext "hl_lines=5" >}}
 └── src
-    └── actions
+    └── endpoints
         └── items
             ├── create.cr
             ├── delete.cr
@@ -605,8 +541,8 @@ As you've completed the item, you may want to delete it. For this, create a new 
 {{< / highlight >}}
 
 ```crystal
-struct Actions::Items::Delete
-  include Onyx::REST::Action
+struct Endpoints::Items::Delete
+  include Onyx::HTTP::Endpoint
 
   params do
     path do
@@ -629,20 +565,24 @@ struct Actions::Items::Delete
 end
 ```
 
-```crystal
-Onyx.get "/", Actions::Hello
-Onyx.post "/items", Actions::Items::Create
-Onyx.get "/items", Actions::Items::Index
-Onyx.get "/items/:id", Actions::Items::Get
-Onyx.patch "/items/:id", Actions::Items::Update
-Onyx.delete "/items/:id", Actions::Items::Delete # << Finally, this line
-```
+{{< highlight crystal "hl_lines=6" >}}
+Onyx.get "/", Endpoints::Hello
+Onyx.post "/items", Endpoints::Items::Create
+Onyx.get "/items", Endpoints::Items::Index
+Onyx.get "/items/:id", Endpoints::Items::Get
+Onyx.patch "/items/:id", Endpoints::Items::Update
+Onyx.delete "/items/:id", Endpoints::Items::Delete
+{{< / highlight >}}
 
 Delete the item:
 
 ```sh
-> curl -X DELETE http://localhost:5000/items/2
+> curl -X DELETE http://127.0.0.1:5000/items/2
 < HTTP/1.1 202 Accepted
 ```
 
-Congratulations! You now have a full-featured JSON REST API in Crystal! 🎉
+Congratulations! You have your own full-featured JSON REST API in Onyx! 🎉 The full source code of this part is available at [GitHub](https://github.com/vladfaust/onyx-todo-json-api/tree/part-2).
+
+## Next steps
+
+You should now be ready to dive into the Onyx documentation at [docs.onyxframework.org](https://docs.onyxframework.org). If you have questions left or just want to chat, join the framework's [Gitter](https://gitter.im/onyxframework) and follow the [Twitter](https://twitter.com/onyxframework).
