@@ -1,6 +1,7 @@
 ---
 title: "Creating JSON APIs with Onyx. Part 1 — The First Endpoint"
 date: 2019-02-23T16:21:06+03:00
+lastmod: 2019-03-11
 description: In this series of tutorials, we'll show you how to build a simple JSON API for a Todo items list with Crystal programming language and Onyx Framework.
 author: Vlad Faust
 tags: [Crystal, Onyx Framework]
@@ -17,9 +18,9 @@ In this series of tutorials, we will show you how to build a simple JSON API for
 
 ---
 
-:bulb: Haven't heard of Crystal yet or not sure whether to use it? You should check the recent [Why Crystal](/posts/why-crystal/) blogpost then.
+💡 Haven't heard of Crystal yet or not sure whether to use it? You should check the recent [Why Crystal](/posts/why-crystal/) blogpost then.
 
-:bulb: If you stuck, then ask your question in the [Gitter room](https://gitter.im/onyxframework) or on [Twitter](https://twitter.com/onyxframework)!
+💡 If you stuck, then ask your question in the [Gitter room](https://gitter.im/onyxframework) or on [Twitter](https://twitter.com/onyxframework)!
 
 ---
 
@@ -61,7 +62,7 @@ Congratulations, you've successfully created and run your first Crystal program!
 
 You may wonder if Crystal has an alternative to the [IRB](https://en.wikipedia.org/wiki/Interactive_Ruby_Shell). Well, yes, with some implications. Check out [ICR](https://github.com/crystal-community/icr):
 
-```plaintext
+```sh
 icr(0.27.2) > puts "Hello, world!"
 Hello, world!
 ```
@@ -70,23 +71,13 @@ Hello, world!
 
 New applications are usually initiated with `crystal init app appname`. Let's create a new application called "todo-onyx":
 
-```plaintext
+```sh
 > crystal init app todo-onyx && cd todo-onyx
-    create  todo-onyx/.gitignore
-    create  todo-onyx/.editorconfig
-    create  todo-onyx/LICENSE
-    create  todo-onyx/README.md
-    create  todo-onyx/.travis.yml
-    create  todo-onyx/shard.yml
-    create  todo-onyx/src/todo-onyx.cr
-    create  todo-onyx/spec/spec_helper.cr
-    create  todo-onyx/spec/todo-onyx_spec.cr
-Initialized empty Git repository in /home/todo-onyx/.git/
 ```
 
 You can check that everything is OK with this command (it should return nothing):
 
-```plaintext
+```sh
 > crystal src/todo-onyx.cr
 ```
 
@@ -96,7 +87,7 @@ For the sake of the tutorial, rename the `todo-onyx.cr` file to `server.cr` and 
 puts "I'm the server"
 ```
 
-```plaintext
+```sh
 > crystal src/server.cr
 I'm the server
 ```
@@ -115,7 +106,7 @@ The directory should look like this:
 │   ├── spec_helper.cr
 │   └── todo-onyx_spec.cr
 ├── src
-│   ├── server.cr
+│   └── server.cr
 └── .travis.yml
 ```
 
@@ -135,27 +126,19 @@ license: MIT
 dependencies:
   onyx:
     github: onyxframework/onyx
-    version: ~> 0.1.2
-  onyx-rest:
-    github: onyxframework/rest
-    version: ~> 0.6.3
+    version: ~> 0.3.0
+  onyx-http:
+    github: onyxframework/http
+    version: ~> 0.7.0
 {{< / highlight >}}
 
 Run `shards install` afterwards:
 
-```plaintext
+```sh
 > shards install
-Fetching https://github.com/onyxframework/onyx.git
-Fetching https://github.com/gdotdesign/cr-dotenv.git
-...
-Fetching https://github.com/onyxframework/sql.git
-Fetching https://github.com/crystal-lang/crystal-db.git
-Installing onyx (0.1.2)
-Installing dotenv (0.1.0)
-...
-Installing onyx-sql (0.6.2)
-Installing db (0.5.1)
 ```
+
+To learn more about Crystal shards, see [the docs](https://github.com/crystal-lang/shards).
 
 Now as you have all the needed dependencies, let's write some real code.
 
@@ -164,7 +147,7 @@ Now as you have all the needed dependencies, let's write some real code.
 Let's make the server respond to the `GET /` request. Replace the contents of `src/server.cr` with this code:
 
 ```crystal
-require "onyx/rest"
+require "onyx/http"
 
 Onyx.get "/" do |env|
   env.response << "Hello, Onyx!"
@@ -175,46 +158,46 @@ Onyx.listen
 
 Now run the server in a separate terminal:
 
-```plaintext
+```sh
 > crystal src/server.cr
- INFO [19:40:43.668 #21269] ⬛ Onyx::HTTP::Server is listening at http://127.0.0.1:5000
+ INFO [19:40:43.668] ⬛ Onyx::HTTP::Server is listening at http://127.0.0.1:5000
 ```
 
 And check the endpoint:
 
-```plaintext
-> curl http://localhost:5000
+```sh
+> curl http://127.0.0.1:5000
 Hello, Onyx!
 ```
 
 Marvelous! Now stop the server with Ctrl+C command:
 
-```plaintext
+```sh
 > crystal src/server.cr
- INFO [19:40:43.668 #21269] ⬛ Onyx::HTTP::Server is listening at http://127.0.0.1:5000
- INFO [19:41:19.513 #21269] [c6ff5cc0]    GET / 200 90μs
+ INFO [19:40:43.668] ⬛ Onyx::HTTP::Server is listening at http://127.0.0.1:5000
+ INFO [19:41:19.513] [c6ff5cc0]    GET / 200 90μs
 ^C
- INFO [19:42:11.264 #21269] ⬛ Onyx::HTTP::Server is shutting down!
+ INFO [19:42:11.264] ⬛ Onyx::HTTP::Server is shutting down!
 ```
 
-You should restart the server manually every time you make a change.
+You should restart the server **manually** every time you make a change.
 
 ### Creating an Action
 
-In [Onyx::REST](https://github.com/onyxframework/rest), you can define separate endpoints called [`Action`](https://api.onyxframework.org/rest/Onyx/REST/Action.html)s. They usually isolate business logic from the rendering layer.
+In [Onyx::HTTP](https://onyxframework.org/http), you can encapsulate endpoints into separate objects. They usually isolate business logic from the rendering layer.
 
-Create a new file at `src/actions/hello.cr` and put the following code into it:
+Create a new file at `src/endpoints/hello.cr` and put the following code into it:
 
 {{< highlight plaintext "hl_lines=2-3" >}}
 └── src
-    ├── actions
+    ├── endpoints
     │   └── hello.cr
     └── server.cr
 {{< / highlight >}}
 
 ```crystal
-struct Actions::Hello
-  include Onyx::REST::Action
+struct Endpoints::Hello
+  include Onyx::HTTP::Endpoint
 
   def call
     context.response << "Hello, Onyx!"
@@ -225,10 +208,10 @@ end
 Modify the `src/server.cr` file:
 
 {{< highlight crystal "hl_lines=2 4" >}}
-require "onyx/rest"
-require "./actions/**"
+require "onyx/http"
+require "./endpoints/**"
 
-Onyx.get "/", Actions::Hello
+Onyx.get "/", Endpoints::Hello
 
 Onyx.listen
 {{< / highlight >}}
@@ -236,21 +219,21 @@ Onyx.listen
 Should you check it with curl, the response will be the same, but now we have a endpoint defined as a separate object.
 
 ```sh
-> curl http://localhost:5000
+> curl http://127.0.0.1:5000
 Hello, Onyx!
 ```
 
 ### Adding a JSON view
 
-Currently our action actually does some rendering. To separate it into another layer, we'll make use of the [Onyx::REST::View](https://api.onyxframework.org/rest/Onyx/REST/View.html) concept.
+Currently our action actually does some rendering. To separate it into another layer, we'll make use of the [Onyx::HTTP views](https://docs.onyxframework.org/http/views) concept.
 
-Views usually don't know anything about the application logic, all they do is rendering their payload. And the rendering mechanism depends on which renderer the server currently uses. It can be, for example, a JSON renderer.
+Views usually don't know anything about the application logic, all they do is rendering their payload.
 
 Create a new file at `src/views/hello.cr`:
 
 {{< highlight plaintext "hl_lines=5-6" >}}
 └── src
-    ├── actions
+    ├── endpoints
     │   └── hello.cr
     ├── server.cr
     └── views
@@ -259,24 +242,20 @@ Create a new file at `src/views/hello.cr`:
 
 ```crystal
 struct Views::Hello
-  include Onyx::REST::View
+  include Onyx::HTTP::View
 
   def initialize(@who : String)
   end
 
-  json({
-    message: "Hello, #{@who}!"
-  })
+  json message: "Hello, #{@who}!"
 end
 ```
-
-> `.json` is a special DSL (*macro*), which defines the way this view will be rendered to JSON. Read more in [Onyx::REST::View](https://api.onyxframework.org/rest/Onyx/REST/View.html) docs.
 
 Now we can use this view in our action:
 
 {{< highlight crystal "hl_lines=5" >}}
-struct Actions::Hello
-  include Onyx::REST::Action
+struct Endpoints::Hello
+  include Onyx::HTTP::Endpoint
 
   def call
     return Views::Hello.new("Onyx")
@@ -284,32 +263,31 @@ struct Actions::Hello
 end
 {{< / highlight >}}
 
-{{< highlight crystal "hl_lines=3 8" >}}
-require "onyx/rest"
+{{< highlight crystal "hl_lines=3" >}}
+require "onyx/http"
 
 require "./views/**"
-require "./actions/**"
+require "./endpoints/**"
 
-Onyx.get "/", Actions::Hello
+Onyx.get "/", Endpoints::Hello
 
-Onyx.render(:json)
 Onyx.listen
 {{< / highlight >}}
 
 The response should now return a JSON string:
 
 ```sh
-> curl http://localhost:5000
+> curl http://127.0.0.1:5000
 {"message":"Hello, Onyx!"}
 ```
 
 ### Adding query params
 
-Onyx::REST::Action has a powerful `.params` DSL which allows to define strongly-typed parameters. Currently the endpoint always returns `"Hello, Onyx!"`. Let's change it with a dynamic query parameter:
+`Onyx::HTTP::Endpoint` module has a powerful `params` DSL which allows to define strongly-typed parameters. Currently the endpoint always returns `"Hello, Onyx!"`. Let's change it with a dynamic query parameter:
 
 {{< highlight crystal "hl_lines=4-8 11-12" >}}
-struct Actions::Hello
-  include Onyx::REST::Action
+struct Endpoints::Hello
+  include Onyx::HTTP::Endpoint
 
   params do
     query do
@@ -327,12 +305,12 @@ end
 From now on, the URL query affects the returning value:
 
 ```sh
-> curl http://localhost:5000
+> curl http://127.0.0.1:5000
 {"message":"Hello, Onyx!"}
-> curl http://localhost:5000?who=Crystal
+> curl http://127.0.0.1:5000?who=Crystal
 {"message":"Hello, Crystal!"}
 ```
 
-That's all for part I of this tutorial. You've learned how to create REST API endpoints with separate business and rendering layers.
+That's all for part I of this tutorial. You've learned how to create REST API endpoints with separate business and rendering layers. The complete source code for this (and other) part is available at [GitHub](https://github.com/vladfaust/onyx-todo-json-api/tree/part-1).
 
 [Continue to part 2 →](/posts/creating-json-apis-with-onyx-part-2)
