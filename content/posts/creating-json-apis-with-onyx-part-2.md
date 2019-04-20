@@ -1,7 +1,7 @@
 ---
 title: "Creating JSON APIs with Onyx. Part 2 — CRUD"
 date: 2019-02-24T19:22:25+03:00
-lastmod: 2019-03-11
+lastmod: 2019-04-20
 draft: false
 author: Vlad Faust
 tags: [Crystal, Onyx Framework]
@@ -93,16 +93,16 @@ To run migrations from within the application, the [migrate.cr](https://github.c
 dependencies:
   onyx:
     github: onyxframework/onyx
-    version: ~> 0.3.0
+    version: ~> 0.4.0
   onyx-http:
     github: onyxframework/http
-    version: ~> 0.7.0
+    version: ~> 0.8.0
   onyx-sql:
     github: onyxframework/sql
-    version: ~> 0.7.0
+    version: ~> 0.8.0
   pg:
     github: will/crystal-pg
-    version: ~> 0.15.0
+    version: ~> 0.16.0
   migrate:
     github: vladfaust/migrate.cr
     version: ~> 0.4.0
@@ -214,7 +214,7 @@ struct Endpoints::Items::Create
     #
 
     item = Models::Item.new(content: params.json.content)
-    Onyx.exec(item.insert)
+    Onyx::SQL.exec(item.insert)
 
     # Return the success status
     #
@@ -233,10 +233,10 @@ require "./models/**"
 require "./views/**"
 require "./endpoints/**"
 
-Onyx.get "/", Endpoints::Hello
-Onyx.post "/items", Endpoints::Items::Create
+Onyx::HTTP.get "/", Endpoints::Hello
+Onyx::HTTP.post "/items", Endpoints::Items::Create
 
-Onyx.listen
+Onyx::HTTP.listen
 {{< / highlight >}}
 
 From now on, the application **requires** `DATABASE_URL` environment variable to be set in runtime (you should have already defined it in the `.env.development.local` file). Run the server with the following command:
@@ -289,7 +289,7 @@ Then modify the Create endpoint so it returns the view. Previously we were using
     #
 
     item = Models::Item.new(content: params.json.content)
-    item = Onyx.query(item.insert.returning("*")).first
+    item = Onyx::SQL.query(item.insert.returning("*")).first
 
     # Return the success status
     #
@@ -342,7 +342,7 @@ struct Endpoints::Items::Index
   include Onyx::HTTP::Endpoint
 
   def call
-    items = Onyx.query(Models::Item.all)
+    items = Onyx::SQL.query(Models::Item.all)
     return Views::Items.new(items)
   end
 end
@@ -365,9 +365,9 @@ end
 Finally add the new endpoint to `src/server.cr`:
 
 {{< highlight crystal "hl_lines=3" >}}
-Onyx.get "/", Endpoints::Hello
-Onyx.post "/items", Endpoints::Items::Create
-Onyx.get "/items", Endpoints::Items::Index
+Onyx::HTTP.get "/", Endpoints::Hello
+Onyx::HTTP.post "/items", Endpoints::Items::Create
+Onyx::HTTP.get "/items", Endpoints::Items::Index
 {{< / highlight >}}
 
 Run the server and validate the endpoint with curl:
@@ -406,7 +406,7 @@ struct Endpoints::Items::Get
   end
 
   def call
-    item = Onyx.query(Models::Item.where(id: params.path.id)).first?
+    item = Onyx::SQL.query(Models::Item.where(id: params.path.id)).first?
     raise ItemNotFound.new unless item
 
     return Views::Item.new(item)
@@ -415,10 +415,10 @@ end
 ```
 
 {{< highlight crystal "hl_lines=4" >}}
-Onyx.get "/", Endpoints::Hello
-Onyx.post "/items", Endpoints::Items::Create
-Onyx.get "/items", Endpoints::Items::Index
-Onyx.get "/items/:id", Endpoints::Items::Get
+Onyx::HTTP.get "/", Endpoints::Hello
+Onyx::HTTP.post "/items", Endpoints::Items::Create
+Onyx::HTTP.get "/items", Endpoints::Items::Index
+Onyx::HTTP.get "/items/:id", Endpoints::Items::Get
 {{< / highlight >}}
 
 Don't forget to test it with curl:
@@ -479,7 +479,7 @@ struct Endpoints::Items::Update
     # Fetch the item from DB
     #
 
-    item = Onyx.query(Models::Item.where(id: params.path.id)).first?
+    item = Onyx::SQL.query(Models::Item.where(id: params.path.id)).first?
     raise ItemNotFound.new unless item
 
     # Create a new changeset with a snapshot of actual item's values
@@ -504,18 +504,18 @@ struct Endpoints::Items::Update
     # Update the item with modified changeset returning itself
     #
 
-    item = Onyx.query(item.update(changeset).returning(Models::Item)).first
+    item = Onyx::SQL.query(item.update(changeset).returning(Models::Item)).first
     return Views::Item.new(item)
   end
 end
 ```
 
 {{< highlight crystal "hl_lines=5" >}}
-Onyx.get "/", Endpoints::Hello
-Onyx.post "/items", Endpoints::Items::Create
-Onyx.get "/items", Endpoints::Items::Index
-Onyx.get "/items/:id", Endpoints::Items::Get
-Onyx.patch "/items/:id", Endpoints::Items::Update
+Onyx::HTTP.get "/", Endpoints::Hello
+Onyx::HTTP.post "/items", Endpoints::Items::Create
+Onyx::HTTP.get "/items", Endpoints::Items::Index
+Onyx::HTTP.get "/items/:id", Endpoints::Items::Get
+Onyx::HTTP.patch "/items/:id", Endpoints::Items::Update
 {{< / highlight >}}
 
 Looks like you're doing great with Onyx! Let's update the corresponding item:
@@ -556,22 +556,22 @@ struct Endpoints::Items::Delete
   end
 
   def call
-    item = Onyx.query(Models::Item.where(id: params.path.id)).first?
+    item = Onyx::SQL.query(Models::Item.where(id: params.path.id)).first?
     raise ItemNotFound.new unless item
 
-    Onyx.exec(item.delete)
+    Onyx::SQL.exec(item.delete)
     status(202)
   end
 end
 ```
 
 {{< highlight crystal "hl_lines=6" >}}
-Onyx.get "/", Endpoints::Hello
-Onyx.post "/items", Endpoints::Items::Create
-Onyx.get "/items", Endpoints::Items::Index
-Onyx.get "/items/:id", Endpoints::Items::Get
-Onyx.patch "/items/:id", Endpoints::Items::Update
-Onyx.delete "/items/:id", Endpoints::Items::Delete
+Onyx::HTTP.get "/", Endpoints::Hello
+Onyx::HTTP.post "/items", Endpoints::Items::Create
+Onyx::HTTP.get "/items", Endpoints::Items::Index
+Onyx::HTTP.get "/items/:id", Endpoints::Items::Get
+Onyx::HTTP.patch "/items/:id", Endpoints::Items::Update
+Onyx::HTTP.delete "/items/:id", Endpoints::Items::Delete
 {{< / highlight >}}
 
 Delete the item:
@@ -579,6 +579,22 @@ Delete the item:
 ```sh
 > curl -X DELETE http://127.0.0.1:5000/items/2
 < HTTP/1.1 202 Accepted
+```
+
+### Beautifying the routes
+
+You can make the routes a bit more shiny using a tree-like `on` syntax:
+
+```crystal
+Onyx::HTTP.get "/", Endpoints::Hello
+
+Onyx::HTTP.on "/items" do |r|
+  r.get "/", Endpoints::Items::Create
+  r.get "/", Endpoints::Items::Index
+  r.get "/:id", Endpoints::Items::Get
+  r.patch "/:id", Endpoints::Items::Update
+  r.delete "/:id", Endpoints::Items::Delete
+end
 ```
 
 Congratulations! You have your own full-featured JSON REST API in Onyx! 🎉 The full source code of this part is available at [GitHub](https://github.com/vladfaust/onyx-todo-json-api/tree/part-2).
