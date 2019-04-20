@@ -1,7 +1,7 @@
 ---
 title: "Creating JSON APIs with Onyx. Part 1 — The First Endpoint"
 date: 2019-02-23T16:21:06+03:00
-lastmod: 2019-03-11
+lastmod: 2019-04-20
 description: In this series of tutorials, we'll show you how to build a simple JSON API for a Todo items list with Crystal programming language and Onyx Framework.
 author: Vlad Faust
 tags: [Crystal, Onyx Framework]
@@ -119,17 +119,17 @@ targets:
   todo-onyx:
     main: src/todo-onyx.cr
 
-crystal: 0.27.2
+crystal: 0.28.0
 
 license: MIT
 
 dependencies:
   onyx:
     github: onyxframework/onyx
-    version: ~> 0.3.0
+    version: ~> 0.4.0
   onyx-http:
     github: onyxframework/http
-    version: ~> 0.7.0
+    version: ~> 0.8.0
 {{< / highlight >}}
 
 Run `shards install` afterwards:
@@ -149,11 +149,11 @@ Let's make the server respond to the `GET /` request. Replace the contents of `s
 ```crystal
 require "onyx/http"
 
-Onyx.get "/" do |env|
+Onyx::HTTP.get "/" do |env|
   env.response << "Hello, Onyx!"
 end
 
-Onyx.listen
+Onyx::HTTP.listen
 ```
 
 Now run the server in a separate terminal:
@@ -211,9 +211,9 @@ Modify the `src/server.cr` file:
 require "onyx/http"
 require "./endpoints/**"
 
-Onyx.get "/", Endpoints::Hello
+Onyx::HTTP.get "/", Endpoints::Hello
 
-Onyx.listen
+Onyx::HTTP.listen
 {{< / highlight >}}
 
 Should you check it with curl, the response will be the same, but now we have a endpoint defined as a separate object.
@@ -269,9 +269,9 @@ require "onyx/http"
 require "./views/**"
 require "./endpoints/**"
 
-Onyx.get "/", Endpoints::Hello
+Onyx::HTTP.get "/", Endpoints::Hello
 
-Onyx.listen
+Onyx::HTTP.listen
 {{< / highlight >}}
 
 The response should now return a JSON string:
