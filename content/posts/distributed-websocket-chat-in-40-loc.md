@@ -1,7 +1,7 @@
 ---
 title: "Distributed websocket chat in 40 lines of code"
 date: 2019-02-27T20:15:25+03:00
-lastmod: 2019-03-11
+lastmod: 2019-04-20
 author: Vlad Faust
 tags: [Crystal, Onyx Framework]
 ---
@@ -26,9 +26,7 @@ Here goes the complete code of the server:
 
 ```crystal
 require "onyx/http"
-require "onyx/eda"
-
-Onyx.channel(:redis) # You'll need REDIS_URL variable to be set
+require "onyx/eda/redis" # This requires REDIS_URL environment variable
 
 struct Message
   include Onyx::EDA::Event
@@ -48,23 +46,25 @@ class Chat
     end
   end
 
+  getter! sub : Onyx::EDA::Channel::Subscription(Message)
+
   def on_open
-    Onyx.subscribe(self, Message) do |message|
+    @sub = Onyx::EDA.redis.subscribe(Message) do |message|
       socket.send("#{message.username}: #{message.content}")
     end
   end
 
   def on_message(message)
-    Onyx.emit(Message.new(params.query.username, message))
+    Onyx::EDA.redis.emit(Message.new(params.query.username, message))
   end
 
   def on_close
-    Onyx.unsubscribe(self)
+    sub.unsubscribe
   end
 end
 
-Onyx.ws "/", Chat
-Onyx.listen(port: ENV["PORT"].to_i) # You'll also need PORT variable
+Onyx::HTTP.ws "/", Chat
+Onyx::HTTP.listen(port: ENV["PORT"].to_i) # You'll also need PORT variable to be set
 ```
 
 First terminal:
@@ -105,19 +105,40 @@ connected (press CTRL+C to quit)
 
 These are two separate websocket chat processes which use Redis as a back-end for synchronisation, in just in **40 lines of code**!
 
+Testing is good. And it is also simple with Onyx. This code would ensure everything is working as intended:
+
+```crystal
+describe "server" do
+  alice_socket = Onyx::HTTP::Spec.ws("/?username=Alice")
+  bob_socket = Onyx::HTTP::Spec.ws("/?username=Bob")
+
+  it do
+    bob_socket.send("Hello")
+    alice_socket.assert_response("Bob: Hello")
+  end
+
+  it do
+    alice_socket.send("Hi")
+    bob_socket.assert_response("Alice: Hi")
+  end
+end
+```
+
 Crystal dependencies ([*shards*](https://github.com/crystal-lang/shards)) you'd need:
 
 ```yaml
 dependencies:
   onyx:
     github: onyxframework/onyx
-    version: ~> 0.3.0
+    version: ~> 0.4.0
   onyx-http:
     github: onyxframework/http
-    version: ~> 0.7.0
+    version: ~> 0.8.0
   onyx-eda:
     github: onyxframework/eda
-    version: ~> 0.2.0
+    version: ~> 0.3.0
 ```
 
-If you like this article but have no experience in Crystal, then follow out [series of tutorials](/posts/creating-json-apis-with-onyx-part-1/) which would lead you through the basics.
+The whole source code is available at [github.com/vladfaust/onyx-40-loc-distributed-chat](https://github.com/vladfaust/onyx-40-loc-distributed-chat). Enjoy!
+
+If you like this article but have no experience in Crystal yet, then follow out [series of tutorials](/posts/creating-json-apis-with-onyx-part-1/) which would lead you through the basics.
