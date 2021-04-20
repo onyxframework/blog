@@ -1,3 +1,3 @@
 # Onyx Framework Blog
 
-See it at <https://blog.onyxframework.org>.
+See it at <https://blog.onyxframework.com>.

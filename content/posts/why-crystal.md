@@ -24,15 +24,15 @@ Crystal is awesome language, but why would you want to start using it right now?
 
 ## What is Onyx Framework
 
-[Onyx](https://onyxframework.org/) is a common-purpose framework with loosely coupled modules to develop appilications in Crystal, faster. Today it has [HTTP](https://github.com/onyxframework/http), [REST](https://github.com/onyxframework/rest) and [SQL](https://github.com/onyxframework/sql) modules.
+[Onyx](https://onyxframework.com/) is a common-purpose framework with loosely coupled modules to develop appilications in Crystal, faster. Today it has [HTTP](https://github.com/onyxframework/http), [REST](https://github.com/onyxframework/rest) and [SQL](https://github.com/onyxframework/sql) modules.
 
 ## Why using Crystal
 
-* **Save big on servers.** Compiled programs consume much less CPU and RAM resources, mostly because of pre-defined type sizes and compilation-time optimizations (e.g. code inlining)
-* **Have less errors in production.** No more unexpected `NoMethodError`, as all calls are checked in compilation-time
-* **Make use of modern language features.** Generics, macros, go-like routines and more at your service
-* **Use familiar, expressive Ruby-like syntax.** Crystal has a beautiful syntax inspired by Ruby
-* **Enjoy incredible documentation.** The [docs](https://crystal-lang.org/reference/) are very thorough and explainatory. Also Crystal is written in Crystal, that's why its [API](https://crystal-lang.org/api/0.27.2/) is easy to read and undestand
+- **Save big on servers.** Compiled programs consume much less CPU and RAM resources, mostly because of pre-defined type sizes and compilation-time optimizations (e.g. code inlining)
+- **Have less errors in production.** No more unexpected `NoMethodError`, as all calls are checked in compilation-time
+- **Make use of modern language features.** Generics, macros, go-like routines and more at your service
+- **Use familiar, expressive Ruby-like syntax.** Crystal has a beautiful syntax inspired by Ruby
+- **Enjoy incredible documentation.** The [docs](https://crystal-lang.org/reference/) are very thorough and explainatory. Also Crystal is written in Crystal, that's why its [API](https://crystal-lang.org/api/0.27.2/) is easy to read and undestand
 
 ## Companies using Crystal in production
 

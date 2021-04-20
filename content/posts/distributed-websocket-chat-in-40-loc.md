@@ -6,7 +6,7 @@ author: Vlad Faust
 tags: [Crystal, Onyx Framework]
 ---
 
-In this article you will find out how to easily create a distributed websocket chat application with [Crystal](https://crystal-lang.org) and [Onyx Framework](https://onyxframework.org).
+In this article you will find out how to easily create a distributed websocket chat application with [Crystal](https://crystal-lang.org) and [Onyx Framework](https://onyxframework.com).
 
 <!--more-->
 
@@ -16,7 +16,7 @@ In this article you will find out how to easily create a distributed websocket c
 {{< tweet 797835943864573952 >}}
 </div>
 
-It works great in a single process, but what if you wanted to scale your application? It is very simple to do so with [Onyx::HTTP](https://onyxframework.org/http) channels and [Onyx::EDA](https://onyxframework.org/eda) events.
+It works great in a single process, but what if you wanted to scale your application? It is very simple to do so with [Onyx::HTTP](https://onyxframework.com/http) channels and [Onyx::EDA](https://onyxframework.com/eda) events.
 
 Note that Onyx::EDA relies on Redis [Streams](https://redis.io/topics/streams-intro) feature, that's why it requires Redis version **>=5**. I use [wscat](https://www.npmjs.com/package/wscat) to test the websockets in the terminal in this article.
 
@@ -124,7 +124,7 @@ describe "server" do
 end
 ```
 
-Crystal dependencies ([*shards*](https://github.com/crystal-lang/shards)) you'd need:
+Crystal dependencies ([_shards_](https://github.com/crystal-lang/shards)) you'd need:
 
 ```yaml
 dependencies:

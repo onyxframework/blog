@@ -1,4 +1,4 @@
-baseURL = "https://blog.onyxframework.org/"
+baseURL = "https://blog.onyxframework.com/"
 languageCode = "en-us"
 title = "Onyx Framework Blog"
 theme = "hugo-paper"
@@ -12,8 +12,8 @@ googleAnalytics = "UA-135279567-2"
 [menu]
 
   [[menu.main]]
-    name = "Visit onyxframework.org"
-    url = "https://onyxframework.org"
+    name = "Visit onyxframework.com"
+    url = "https://onyxframework.com"
     weight = -110
 
   [[menu.main]]

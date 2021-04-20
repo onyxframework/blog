@@ -7,13 +7,13 @@ author: Vlad Faust
 tags: [Crystal, Onyx Framework]
 ---
 
-In this series of tutorials, we will show you how to build a simple JSON API for a Todo items list with [Crystal programming language](https://crystal-lang.org/) and [Onyx Framework](https://onyxframework.org/).
+In this series of tutorials, we will show you how to build a simple JSON API for a Todo items list with [Crystal programming language](https://crystal-lang.org/) and [Onyx Framework](https://onyxframework.com/).
 
 <!--more-->
 
 ## Tutorial contents
 
-1. Part 1 — The First Endpoint (*this article*)
+1. Part 1 — The First Endpoint (_this article_)
 2. [Part 2 — CRUD](/posts/creating-json-apis-with-onyx-part-2)
 
 ---
@@ -112,24 +112,24 @@ The directory should look like this:
 
 ### Adding dependencies
 
-It's time to add some ~~gems~~ shards! As we're using [Onyx Framework](https://onyxframework.org), modify your `shard.yml` file adding `dependencies` section like this:
+It's time to add some ~~gems~~ shards! As we're using [Onyx Framework](https://onyxframework.com), modify your `shard.yml` file adding `dependencies` section like this:
 
 {{< highlight yaml "hl_lines=9-15" >}}
 targets:
-  todo-onyx:
-    main: src/todo-onyx.cr
+todo-onyx:
+main: src/todo-onyx.cr
 
 crystal: 0.28.0
 
 license: MIT
 
 dependencies:
-  onyx:
-    github: onyxframework/onyx
-    version: ~> 0.4.0
-  onyx-http:
-    github: onyxframework/http
-    version: ~> 0.8.0
+onyx:
+github: onyxframework/onyx
+version: ~> 0.4.0
+onyx-http:
+github: onyxframework/http
+version: ~> 0.8.0
 {{< / highlight >}}
 
 Run `shards install` afterwards:
@@ -184,15 +184,15 @@ You should restart the server **manually** every time you make a change.
 
 ### Creating an Action
 
-In [Onyx::HTTP](https://onyxframework.org/http), you can encapsulate endpoints into separate objects. They usually isolate business logic from the rendering layer.
+In [Onyx::HTTP](https://onyxframework.com/http), you can encapsulate endpoints into separate objects. They usually isolate business logic from the rendering layer.
 
 Create a new file at `src/endpoints/hello.cr` and put the following code into it:
 
 {{< highlight plaintext "hl_lines=2-3" >}}
 └── src
-    ├── endpoints
-    │   └── hello.cr
-    └── server.cr
+├── endpoints
+│   └── hello.cr
+└── server.cr
 {{< / highlight >}}
 
 ```crystal
@@ -209,7 +209,7 @@ Modify the `src/server.cr` file:
 
 {{< highlight crystal "hl_lines=2 4" >}}
 require "onyx/http"
-require "./endpoints/**"
+require "./endpoints/\*\*"
 
 Onyx::HTTP.get "/", Endpoints::Hello
 
@@ -225,7 +225,7 @@ Hello, Onyx!
 
 ### Adding a JSON view
 
-Currently our action actually does some rendering. To separate it into another layer, we'll make use of the [Onyx::HTTP views](https://docs.onyxframework.org/http/views) concept.
+Currently our action actually does some rendering. To separate it into another layer, we'll make use of the [Onyx::HTTP views](https://docs.onyxframework.com/http/views) concept.
 
 Views usually don't know anything about the application logic, all they do is rendering their payload.
 
@@ -233,11 +233,11 @@ Create a new file at `src/views/hello.cr`:
 
 {{< highlight plaintext "hl_lines=5-6" >}}
 └── src
-    ├── endpoints
-    │   └── hello.cr
-    ├── server.cr
-    └── views
-        └── hello.cr
+├── endpoints
+│   └── hello.cr
+├── server.cr
+└── views
+└── hello.cr
 {{< / highlight >}}
 
 ```crystal
@@ -255,11 +255,11 @@ Now we can use this view in our action:
 
 {{< highlight crystal "hl_lines=5" >}}
 struct Endpoints::Hello
-  include Onyx::HTTP::Endpoint
+include Onyx::HTTP::Endpoint
 
-  def call
-    return Views::Hello.new("Onyx")
-  end
+def call
+return Views::Hello.new("Onyx")
+end
 end
 {{< / highlight >}}
 
@@ -287,18 +287,17 @@ The response should now return a JSON string:
 
 {{< highlight crystal "hl_lines=4-8 11-12" >}}
 struct Endpoints::Hello
-  include Onyx::HTTP::Endpoint
+include Onyx::HTTP::Endpoint
 
-  params do
-    query do
-      type who : String = "Onyx" # The default value is "Onyx"
-    end
-  end
+params do
+query do
+type who : String = "Onyx" # The default value is "Onyx"
+end
+end
 
-  def call
-    # At this point, `params.query.who` is guaranteed to be a String
-    return Views::Hello.new(params.query.who)
-  end
+def call # At this point, `params.query.who` is guaranteed to be a String
+return Views::Hello.new(params.query.who)
+end
 end
 {{< / highlight >}}
 

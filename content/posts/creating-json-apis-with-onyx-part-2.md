@@ -15,11 +15,11 @@ In the second part of the tutorial we are going to create CRUD endpoints for our
 ## Tutorial contents
 
 1. [Part 1 — The First Endpoint](/posts/creating-json-apis-with-onyx-part-1)
-2. Part 2 — CRUD (*this article*)
+2. Part 2 — CRUD (_this article_)
 
 ---
 
-We will be using [Onyx::SQL](https://onyxframework.org/sql) as an ORM and [PostgreSQL](https://www.postgresql.org/) as a database (although it's possible to use another SQL database with slight changes to the code).
+We will be using [Onyx::SQL](https://onyxframework.com/sql) as an ORM and [PostgreSQL](https://www.postgresql.org/) as a database (although it's possible to use another SQL database with slight changes to the code).
 
 **Table of contents:**
 
@@ -45,8 +45,8 @@ Create a new migration file at `db/migrations/001_create_items.sql`:
 {{< highlight plaintext "hl_lines=2-4" >}}
 .
 └── db
-    └── migrations
-        └── 001_create_items.sql
+└── migrations
+└── 001_create_items.sql
 {{< / highlight >}}
 
 ```sql
@@ -91,21 +91,21 @@ To run migrations from within the application, the [migrate.cr](https://github.c
 
 {{< highlight yaml "hl_lines=8-16" >}}
 dependencies:
-  onyx:
-    github: onyxframework/onyx
-    version: ~> 0.4.0
-  onyx-http:
-    github: onyxframework/http
-    version: ~> 0.8.0
-  onyx-sql:
-    github: onyxframework/sql
-    version: ~> 0.8.0
-  pg:
-    github: will/crystal-pg
-    version: ~> 0.16.0
-  migrate:
-    github: vladfaust/migrate.cr
-    version: ~> 0.4.0
+onyx:
+github: onyxframework/onyx
+version: ~> 0.4.0
+onyx-http:
+github: onyxframework/http
+version: ~> 0.8.0
+onyx-sql:
+github: onyxframework/sql
+version: ~> 0.8.0
+pg:
+github: will/crystal-pg
+version: ~> 0.16.0
+migrate:
+github: vladfaust/migrate.cr
+version: ~> 0.4.0
 {{< / highlight >}}
 
 Run `shards install` to install the freshly added dependencies.
@@ -162,9 +162,9 @@ Add a new file at `src/models/item.cr`:
 
 {{< highlight plaintext "hl_lines=2-3" >}}
 └── src
-    ├── models
-    │   └── item.cr
-    └── server.cr
+├── models
+│   └── item.cr
+└── server.cr
 {{< / highlight >}}
 
 ```crystal
@@ -192,9 +192,9 @@ Add a new file at `src/endpoints/items/create.cr` and put the following code ins
 
 {{< highlight plaintext "hl_lines=3-4" >}}
 └── src
-    └── endpoints
-        └── items
-            └── create.cr
+└── endpoints
+└── items
+└── create.cr
 {{< / highlight >}}
 
 ```crystal
@@ -231,7 +231,7 @@ require "onyx/http"
 
 require "./models/**"
 require "./views/**"
-require "./endpoints/**"
+require "./endpoints/\*\*"
 
 Onyx::HTTP.get "/", Endpoints::Hello
 Onyx::HTTP.post "/items", Endpoints::Items::Create
@@ -261,8 +261,8 @@ Currently the response doesn't contain the created item itself. Let's add a corr
 
 {{< highlight plaintext "hl_lines=3" >}}
 └── src
-    └── views
-        └── item.cr
+└── views
+└── item.cr
 {{< / highlight >}}
 
 ```crystal
@@ -284,9 +284,7 @@ end
 
 Then modify the Create endpoint so it returns the view. Previously we were using `Onyx.exec` to execute an SQL query and not expect anything in return. Now we use `Onyx.query` to actually query the database with `INSERT ... RETURNING` query:
 
-{{< highlight crystal "hl_lines=5 11" >}}
-    # Insert the model into the database
-    #
+{{< highlight crystal "hl_lines=5 11" >}} # Insert the model into the database #
 
     item = Models::Item.new(content: params.json.content)
     item = Onyx::SQL.query(item.insert.returning("*")).first
@@ -296,7 +294,8 @@ Then modify the Create endpoint so it returns the view. Previously we were using
 
     status(201)
     return Views::Item.new(item)
-  end
+
+end
 end
 {{< / highlight >}}
 
@@ -325,13 +324,13 @@ Now we want to list all the items we have. To do so, create a new Index endpoint
 
 {{< highlight plaintext "hl_lines=5 8" >}}
 └── src
-    ├── endpoints
-    │   └── items
-    │       ├── create.cr
-    │       └── index.cr
-    └── views
-        ├── item.cr
-        └── items.cr
+├── endpoints
+│   └── items
+│   ├── create.cr
+│   └── index.cr
+└── views
+├── item.cr
+└── items.cr
 {{< / highlight >}}
 
 ```crystal
@@ -383,11 +382,11 @@ Get Endpoint is very simple, you don't need a new View for it:
 
 {{< highlight plaintext "hl_lines=5" >}}
 └── src
-    └── endpoints
-        └── items
-            ├── create.cr
-            ├── get.cr
-            └── index.cr
+└── endpoints
+└── items
+├── create.cr
+├── get.cr
+└── index.cr
 {{< / highlight >}}
 
 ```crystal
@@ -436,12 +435,12 @@ To be able to update created items, you'll need a brand new Update endpoint:
 
 {{< highlight plaintext "hl_lines=7" >}}
 └── src
-    └── endpoints
-        └── items
-            ├── create.cr
-            ├── get.cr
-            ├── index.cr
-            └── update.cr
+└── endpoints
+└── items
+├── create.cr
+├── get.cr
+├── index.cr
+└── update.cr
 {{< / highlight >}}
 
 ```crystal
@@ -531,13 +530,13 @@ As you've completed the item, you may want to delete it. For this, create a new 
 
 {{< highlight plaintext "hl_lines=5" >}}
 └── src
-    └── endpoints
-        └── items
-            ├── create.cr
-            ├── delete.cr
-            ├── get.cr
-            ├── index.cr
-            └── update.cr
+└── endpoints
+└── items
+├── create.cr
+├── delete.cr
+├── get.cr
+├── index.cr
+└── update.cr
 {{< / highlight >}}
 
 ```crystal
@@ -601,4 +600,4 @@ Congratulations! You have your own full-featured JSON REST API in Onyx! 🎉 The
 
 ## Next steps
 
-You should now be ready to dive into the Onyx documentation at [docs.onyxframework.org](https://docs.onyxframework.org). If you have questions left or just want to chat, join the framework's [Gitter](https://gitter.im/onyxframework) and follow the [Twitter](https://twitter.com/onyxframework).
+You should now be ready to dive into the Onyx documentation at [docs.onyxframework.com](https://docs.onyxframework.com). If you have questions left or just want to chat, join the framework's [Gitter](https://gitter.im/onyxframework) and follow the [Twitter](https://twitter.com/onyxframework).
